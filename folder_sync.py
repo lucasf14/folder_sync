@@ -1,6 +1,7 @@
 import os
 import shutil
 import sys
+import time
 
 
 def synchronize_folders(source_folder, replica_folder):
@@ -17,15 +18,18 @@ def synchronize_folders(source_folder, replica_folder):
 
 
 def main():
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         # Example: python3 folder_sync.py "source_folder" "replica_folder"
         print('Usage: python3 main.py <source_folder> <replica_folder>')
         sys.exit(1)
 
     source_folder = sys.argv[1]
     replica_folder = sys.argv[2]
+    interval = int(sys.argv[3])
 
-    synchronize_folders(source_folder, replica_folder)
+    while True:
+        synchronize_folders(source_folder, replica_folder)
+        time.sleep(interval)
 
 
 if __name__ == "__main__":
