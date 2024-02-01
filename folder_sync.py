@@ -17,46 +17,95 @@ def logger_setup(log_path):
 
 
 def create_directory_if_not_exists(directory):
+    # Create the replica folder if it doesn't exist
     if not os.path.exists(directory):
         os.makedirs(directory)
         logging.info(f"Folder created: {directory}")
 
 
 def copy_files(source_file, replica_file):
+    # Copy any missing files in the replica folder from the source folder
     if not os.path.exists(replica_file):
         shutil.copy(source_file, replica_file)
         logging.info(f"File copied: {source_file} -> {replica_file}")
 
 
+def copy_subfolders_and_files(source_folder, replica_folder):
+    # Copy any missing folders and files
+    # in the replica folder from the source folder
+    for root, dirs, files in os.walk(source_folder):
+        for folder in dirs:
+            source_subfolder = os.path.join(root, folder)
+            replica_subfolder = os.path.join(
+                replica_folder,
+                os.path.relpath(source_subfolder, source_folder)
+            )
+            create_directory_if_not_exists(
+                replica_subfolder
+            )
+
+        for file in files:
+            source_file = os.path.join(root, file)
+            replica_file = os.path.join(
+                replica_folder,
+                os.path.relpath(source_file, source_folder)
+            )
+            copy_files(
+                source_file,
+                replica_file
+            )
+
+
+def remove_directory_if_not_exists(source_folder, replica_folder):
+    # Remove any replica subfolder if it doesn't exist in source_folder anymore
+    if not os.path.exists(source_folder):
+        logging.info(f"Removing folder: {replica_folder}")
+
+        # Logs the content of the folder to be removed
+        for file in os.listdir(replica_folder):
+            logging.info(f"Files in {replica_folder}: {file}")
+        shutil.rmtree(replica_folder)
+        logging.info(f"Folder removed: {replica_folder}")
+
+
 def remove_files(replica_file, source_file):
+    # Remove files in replica folder that don't exist in source folder
     if not os.path.exists(source_file):
         os.remove(replica_file)
         logging.info(f"File removed: {replica_file}")
 
 
+def remove_subfolders_and_files(source_folder, replica_folder):
+    # Remove any extra folders or files the replica folder
+    for root, dirs, files in os.walk(replica_folder):
+        for folder in dirs:
+            replica_subfolder = os.path.join(root, folder)
+            source_subfolder = os.path.join(
+                source_folder,
+                os.path.relpath(replica_subfolder, replica_folder)
+            )
+            remove_directory_if_not_exists(
+                source_subfolder,
+                replica_subfolder
+            )
+
+        for file in files:
+            replica_file = os.path.join(root, file)
+            source_file = os.path.join(
+                source_folder,
+                os.path.relpath(replica_file, replica_folder)
+            )
+            remove_files(
+                replica_file,
+                source_file
+            )
+
+
 def synchronize_folders(source_folder, replica_folder):
     try:
         create_directory_if_not_exists(replica_folder)
-
-        # Copy the missing files in the replica folder from the source folder
-        for root, dirs, files in os.walk(source_folder):
-            for file in files:
-                source_file = os.path.join(root, file)
-                replica_file = os.path.join(
-                    replica_folder,
-                    os.path.relpath(source_file, source_folder)
-                )
-                copy_files(source_file, replica_file)
-
-        # Remove files in replica folder that don't exist in source folder
-        for root, dirs, files in os.walk(replica_folder):
-            for file in files:
-                replica_file = os.path.join(root, file)
-                source_file = os.path.join(
-                    source_folder,
-                    os.path.relpath(replica_file, replica_folder)
-                )
-                remove_files(replica_file, source_file)
+        copy_subfolders_and_files(source_folder, replica_folder)
+        remove_subfolders_and_files(source_folder, replica_folder)
 
     except Exception as e:
         logging.error(f"Synchronization failed: {e}")
