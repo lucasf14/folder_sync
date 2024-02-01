@@ -20,17 +20,6 @@ def remove_directory_if_not_exists(
 ) -> None:
     # Remove any replica subfolder if it doesn't exist in source_folder anymore
     if not os.path.exists(source_folder):
-        for root, dirs, files in os.walk(replica_folder, topdown=False):
-            for file in files:
-                file_path = os.path.join(root, file)
-                os.remove(file_path)
-                logging.info(f"File removed: {file_path}")
-
-            for dir_name in dirs:
-                dir_path = os.path.join(root, dir_name)
-                os.rmdir(dir_path)
-                logging.info(f"Folder removed: {dir_path}")
-
         shutil.rmtree(replica_folder)
         logging.info(f"Folder removed: {replica_folder}")
 
@@ -69,18 +58,7 @@ def remove_subfolders_and_files(
     replica_folder: str
 ) -> None:
     # Remove any extra folders or files the replica folder
-    for root, dirs, files in os.walk(replica_folder):
-        for folder in dirs:
-            replica_subfolder = os.path.join(root, folder)
-            source_subfolder = os.path.join(
-                source_folder,
-                os.path.relpath(replica_subfolder, replica_folder)
-            )
-            remove_directory_if_not_exists(
-                source_subfolder,
-                replica_subfolder
-            )
-
+    for root, dirs, files in os.walk(replica_folder, topdown=False):
         for file in files:
             replica_file = os.path.join(root, file)
             source_file = os.path.join(
@@ -90,4 +68,15 @@ def remove_subfolders_and_files(
             remove_files(
                 replica_file,
                 source_file
+            )
+
+        for folder in dirs:
+            replica_subfolder = os.path.join(root, folder)
+            source_subfolder = os.path.join(
+                source_folder,
+                os.path.relpath(replica_subfolder, replica_folder)
+            )
+            remove_directory_if_not_exists(
+                source_subfolder,
+                replica_subfolder
             )
