@@ -16,12 +16,27 @@ def logger_setup(log_path):
     )
 
 
+def create_directory_if_not_exists(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+        logging.info(f"Folder created: {directory}")
+
+
+def copy_files(source_file, replica_file):
+    if not os.path.exists(replica_file):
+        shutil.copy(source_file, replica_file)
+        logging.info(f"File copied: {source_file} -> {replica_file}")
+
+
+def remove_files(replica_file, source_file):
+    if not os.path.exists(source_file):
+        os.remove(replica_file)
+        logging.info(f"File removed: {replica_file}")
+
+
 def synchronize_folders(source_folder, replica_folder):
     try:
-        # Creates the directory and copies its content, if it doesn't exist
-        if not os.path.exists(replica_folder):
-            os.makedirs(replica_folder)
-            logging.info(f"Folder created: {replica_folder}")
+        create_directory_if_not_exists(replica_folder)
 
         # Copy the missing files in the replica folder from the source folder
         for root, dirs, files in os.walk(source_folder):
@@ -31,11 +46,7 @@ def synchronize_folders(source_folder, replica_folder):
                     replica_folder,
                     os.path.relpath(source_file, source_folder)
                 )
-                if not os.path.exists(replica_file):
-                    shutil.copy(source_file, replica_file)
-                    logging.info(
-                        f"File copied: {source_file} -> {replica_file}"
-                    )
+            copy_files(source_file, replica_file)
 
         # Remove files in replica folder that don't exist in source folder
         for root, dirs, files in os.walk(replica_folder):
@@ -45,9 +56,8 @@ def synchronize_folders(source_folder, replica_folder):
                     source_folder,
                     os.path.relpath(replica_file, replica_folder)
                 )
-                if not os.path.exists(source_file):
-                    os.remove(replica_file)
-                    logging.info(f"File removed: {replica_file}")
+            remove_files(replica_file, source_file)
+
     except Exception as e:
         logging.error(f"Synchronization failed: {e}")
 
