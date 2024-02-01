@@ -46,7 +46,7 @@ def synchronize_folders(source_folder, replica_folder):
                     replica_folder,
                     os.path.relpath(source_file, source_folder)
                 )
-            copy_files(source_file, replica_file)
+                copy_files(source_file, replica_file)
 
         # Remove files in replica folder that don't exist in source folder
         for root, dirs, files in os.walk(replica_folder):
@@ -56,7 +56,7 @@ def synchronize_folders(source_folder, replica_folder):
                     source_folder,
                     os.path.relpath(replica_file, replica_folder)
                 )
-            remove_files(replica_file, source_file)
+                remove_files(replica_file, source_file)
 
     except Exception as e:
         logging.error(f"Synchronization failed: {e}")
