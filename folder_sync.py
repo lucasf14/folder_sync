@@ -5,7 +5,9 @@ import time
 import logging
 
 
-def logger_setup(log_path):
+def logger_setup(
+    log_path: str
+) -> None:
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s | %(levelname)s | %(message)s',
@@ -16,14 +18,19 @@ def logger_setup(log_path):
     )
 
 
-def create_directory_if_not_exists(directory):
+def create_directory_if_not_exists(
+    directory: str
+) -> None:
     # Create the replica folder if it doesn't exist
     if not os.path.exists(directory):
         os.makedirs(directory)
         logging.info(f"Folder created: {directory}")
 
 
-def copy_files(source_file, replica_file):
+def copy_files(
+    source_file: str,
+    replica_file: str
+) -> None:
     # Get the modification times of the source and replica files
     source_mod_time = os.path.getmtime(source_file)
     replica_mod_time = (
@@ -39,7 +46,10 @@ def copy_files(source_file, replica_file):
         logging.info(f"File updated: {source_file} -> {replica_file}")
 
 
-def copy_subfolders_and_files(source_folder, replica_folder):
+def copy_subfolders_and_files(
+    source_folder: str,
+    replica_folder: str
+) -> None:
     # Copy any missing folders and files
     # in the replica folder from the source folder
     for root, dirs, files in os.walk(source_folder):
@@ -65,7 +75,10 @@ def copy_subfolders_and_files(source_folder, replica_folder):
             )
 
 
-def remove_directory_if_not_exists(source_folder, replica_folder):
+def remove_directory_if_not_exists(
+    source_folder: str,
+    replica_folder: str
+) -> None:
     # Remove any replica subfolder if it doesn't exist in source_folder anymore
     if not os.path.exists(source_folder):
         logging.info(f"Removing folder: {replica_folder}")
@@ -77,14 +90,20 @@ def remove_directory_if_not_exists(source_folder, replica_folder):
         logging.info(f"Folder removed: {replica_folder}")
 
 
-def remove_files(replica_file, source_file):
+def remove_files(
+    replica_file: str,
+    source_file: str
+) -> None:
     # Remove files in replica folder that don't exist in source folder
     if not os.path.exists(source_file):
         os.remove(replica_file)
         logging.info(f"File removed: {replica_file}")
 
 
-def remove_subfolders_and_files(source_folder, replica_folder):
+def remove_subfolders_and_files(
+    source_folder: str,
+    replica_folder: str
+) -> None:
     # Remove any extra folders or files the replica folder
     for root, dirs, files in os.walk(replica_folder):
         for folder in dirs:
@@ -110,8 +129,12 @@ def remove_subfolders_and_files(source_folder, replica_folder):
             )
 
 
-def synchronize_folders(source_folder, replica_folder):
+def synchronize_folders(
+    source_folder: str,
+    replica_folder: str
+) -> None:
     try:
+        print(type(source_folder), type(replica_folder))
         create_directory_if_not_exists(replica_folder)
         copy_subfolders_and_files(source_folder, replica_folder)
         remove_subfolders_and_files(source_folder, replica_folder)
@@ -120,7 +143,7 @@ def synchronize_folders(source_folder, replica_folder):
         logging.error(f"Synchronization failed: {e}")
 
 
-def main():
+if __name__ == "__main__":
     if len(sys.argv) != 5:
         # Example: python3 folder_sync.py src_folder rep_folder 5 events.log
         print(
@@ -145,7 +168,3 @@ def main():
             time.sleep(interval)
     except KeyboardInterrupt:
         logging.info("Execution interrupted via CTRL-C")
-
-
-if __name__ == "__main__":
-    main()
