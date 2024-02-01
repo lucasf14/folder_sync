@@ -20,11 +20,17 @@ def remove_directory_if_not_exists(
 ) -> None:
     # Remove any replica subfolder if it doesn't exist in source_folder anymore
     if not os.path.exists(source_folder):
-        logging.info(f"Removing folder: {replica_folder}")
+        for root, dirs, files in os.walk(replica_folder, topdown=False):
+            for file in files:
+                file_path = os.path.join(root, file)
+                os.remove(file_path)
+                logging.info(f"File removed: {file_path}")
 
-        # Logs the content of the folder to be removed
-        for file in os.listdir(replica_folder):
-            logging.info(f"Files in {replica_folder}: {file}")
+            for dir_name in dirs:
+                dir_path = os.path.join(root, dir_name)
+                os.rmdir(dir_path)
+                logging.info(f"Folder removed: {dir_path}")
+
         shutil.rmtree(replica_folder)
         logging.info(f"Folder removed: {replica_folder}")
 
