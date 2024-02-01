@@ -3,6 +3,7 @@ import shutil
 import sys
 import time
 import logging
+import argparse
 
 
 def logger_setup(
@@ -134,28 +135,36 @@ def synchronize_folders(
     replica_folder: str
 ) -> None:
     try:
-        print(type(source_folder), type(replica_folder))
         create_directory_if_not_exists(replica_folder)
         copy_subfolders_and_files(source_folder, replica_folder)
         remove_subfolders_and_files(source_folder, replica_folder)
-
     except Exception as e:
         logging.error(f"Synchronization failed: {e}")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 5:
-        # Example: python3 folder_sync.py src_folder rep_folder 5 events.log
-        print(
-            'Usage: python3 main.py <source_folder>'
-            '<replica_folder> <interval> <log_file>'
-        )
-        sys.exit(1)
+    # Example: python3 folder_sync.py src_folder rep_folder 5 events.log
+    parser = argparse.ArgumentParser(
+        description='Folder synchronization script'
+    )
+    parser.add_argument(
+        'source_folder', type=str, help='Path to the source folder'
+    )
+    parser.add_argument(
+        'replica_folder', type=str, help='Path to the replica folder'
+    )
+    parser.add_argument(
+        'interval', type=int, help='Synchronization interval in seconds'
+    )
+    parser.add_argument(
+        'log_file', type=str, help='Path to the log file'
+    )
+    args = parser.parse_args()
 
-    source_folder = sys.argv[1]
-    replica_folder = sys.argv[2]
-    interval = int(sys.argv[3])
-    log_file = sys.argv[4]
+    source_folder = args.source_folder
+    replica_folder = args.replica_folder
+    interval = args.interval
+    log_file = args.log_file
 
     logger_setup(log_file)
     logging.info(
