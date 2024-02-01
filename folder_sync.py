@@ -24,10 +24,19 @@ def create_directory_if_not_exists(directory):
 
 
 def copy_files(source_file, replica_file):
-    # Copy any missing files in the replica folder from the source folder
+    # Get the modification times of the source and replica files
+    source_mod_time = os.path.getmtime(source_file)
+    replica_mod_time = (
+        os.path.getmtime(replica_file) if os.path.exists(replica_file) else 0
+    )
     if not os.path.exists(replica_file):
-        shutil.copy(source_file, replica_file)
+        # Copy any missing files in the replica folder from the source folder
+        shutil.copy2(source_file, replica_file)
         logging.info(f"File copied: {source_file} -> {replica_file}")
+    elif source_mod_time > replica_mod_time:
+        # Update the replica file if the source file was changed
+        shutil.copy2(source_file, replica_file)
+        logging.info(f"File updated: {source_file} -> {replica_file}")
 
 
 def copy_subfolders_and_files(source_folder, replica_folder):
