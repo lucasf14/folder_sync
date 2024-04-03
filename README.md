@@ -1,4 +1,4 @@
-# Veeam - Folders Synchronization Test Task
+# Folders Synchronization (Task)
 
 ## Overview
 
